@@ -1586,17 +1586,18 @@ namespace rsx
 
 				m_graphics_state.set(rsx::rtt_config_contested);
 
-				// TODO: Research clearing both depth AND color
-				// TODO: If context is creation_draw, deal with possibility of a lost buffer clear
-				if (depth_test_enabled || stencil_test_enabled || (!layout.color_write_enabled[index] && layout.zeta_write_enabled))
+				// Pick based on which target is written, not tested. Old heuristic on
+				// depth/stencil_test mis-classified G-buffer passes that depth-test
+				// against a prior Z-prepass.
+				if (layout.zeta_write_enabled && !layout.color_write_enabled[index])
 				{
-					// Use address for depth data
+					// Depth-only pass: keep depth
 					layout.color_addresses[index] = 0;
 					continue;
 				}
 				else
 				{
-					// Use address for color data
+					// Color pass (or both writes): keep color
 					layout.zeta_address = 0;
 				}
 			}
